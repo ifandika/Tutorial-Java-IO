@@ -231,9 +231,172 @@ The square root of 5 is 2.23606797749979.
 ```
 #### Fungsi format
 
+### 2.6 I/O Command Line
+Java mendukung 2 jenis interaksi, yaitu Standar Stream & Console.
+#### Standar Stream
+Standard Stream/Aliran Standar adalah fitur yang banyak digunakan di sistem operasi untuk menerima input/masukan
+seperti Keyboard, Mouse lalu menampilkan ke monitor. Java mendukung ***standard stream***:
 
+- ***Standard Input*** = ***System.in***
+- ***Standard Output*** = ***System.out***
+- ***Standard Error*** = ***System.err***
 
+Contoh mengakses ***standard input stream***.
+```Java
+	InputStreamReader inputStream = new InputStreamReader(System.in);
+	...
+```
+#### Console
+Alternatif lain menggunakan ***Console***, menyediakan Standard Stream, fitur-fitur lain. Untuk mengecek apakah mendukung Console,
+panggil ***System.console()***, jika return NULL maka tidak mendukung Console.
+```Java
+System.out.println(System.console());
+```
+Output:
+```Bash
+java.io.Console@1828a0f
+```
+Contoh program sederhana mengambil input dan menampilkan dengan Console.
+```Java
+import java.util.*;
 
+public class Main {
+	public static void main(String[] args) throws IOException {
+		System.out.println(System.console());
+		
+		Console c = System.console();
+		
+		if(c == null) {
+			System.out.println("Console not support");
+			System.exit(1);
+		}
+		System.out.println("Console support");
+		String password = c.readLine("Enter password: ");
+		System.out.println("Your password: "+password);
+	}
+}
+```
+Output:
+```Bash
+java.io.Console@1828a0f
+Console support
+Enter password: 1234
+Your password: 1234
+```
+### 2.7 Data Stream
+Data Stream mendukung I/O Biner dari tipe data primitif (int, double, char, float). Semua data stream mengimplementasi interface
+**DataInput** & **DataOutput**. Contoh implementasi adalah **DataInputStream** & **DataOutputStream**. Contoh program sederhana
+menulis data primitif ke file.
+```Java
+import java.util.*;
+import java.io.*;
 
+public class Main {
+	public static void main(String[] args) throws IOException {
+		
+		// Data yang akan ditulis
+		String output = "outputdatastream";
+		double[] prices = { 19.99, 9.99, 15.99, 3.99, 4.99 };
+		int[] units = { 12, 8, 13, 29, 50 };
+		String[] descs = {
+		    "Java T-shirt",
+		    "Java Mug",
+		    "Duke Juggling Dolls",
+		    "Java Pin",
+		    "Java Key Chain"
+		};
+	}
+}
+```
+Lalu buat objek Data Stream untuk menulis.
+```Java
+import java.util.*;
+import java.io.*;
+import java.nio.*;
 
+public class Main {
+	public static void main(String[] args) throws IOException {
+		
+		// Data yang akan ditulis
+		String output = "outputdatastream";
+		double[] prices = { 19.99, 9.99, 15.99, 3.99, 4.99 };
+		int[] units = { 12, 8, 13, 29, 50 };
+		String[] descs = {
+		    "Java T-shirt",
+		    "Java Mug",
+		    "Duke Juggling Dolls",
+		    "Java Pin",
+		    "Java Key Chain"
+		};
+		
+		// Buat objek data stream
+		DataOutputStream out = new DataOutputStream(
+			new BufferedOutputStream(
+				new FileOutputStream(output)));
+	}
+}
+```
+Lalu tulis data dengan fungsi DataOutputStream.write...
+```Java
+import java.util.*;
+import java.io.*;
+import java.nio.*;
 
+public class Main {
+	public static void main(String[] args) throws IOException {
+		
+		// Data yang akan ditulis
+		String output = "outputdatastream";
+		double[] prices = { 19.99, 9.99, 15.99, 3.99, 4.99 };
+		int[] units = { 12, 8, 13, 29, 50 };
+		String[] descs = {
+		    "Java T-shirt",
+		    "Java Mug",
+		    "Duke Juggling Dolls",
+		    "Java Pin",
+		    "Java Key Chain"
+		};
+		
+		// Buat objek data stream
+		DataOutputStream out = new DataOutputStream(
+			new BufferedOutputStream(
+				new FileOutputStream(output)));
+		
+		for(int i = 0; i < prices.length; i++) {
+			out.writeDouble(prices[i]); // Tulis double
+			out.writeInt(units[i]); // Tulis int
+			out.writeUTF(descs[i]); // Tulis String
+		}
+	}
+}
+```
+Maka akan keluar file **outputdatastream** bertipe biner. Untuk membuka perlu Decode Binary, atau lewat objek **DataInputStream**.
+Untuk membaca data panggil fungsi **DataInputStream.read< tipe_data >()**.
+```Java
+DataInputStream in = new DataInputStream(new
+	BufferedInputStream(
+		new FileInputStream(output)));
+		
+		double price;
+		int unit;
+		String desc;
+		double total = 0.0;
+		
+		try {
+			while (true) {
+				price = in.readDouble();
+				unit = in.readInt();
+				desc = in.readUTF();
+				System.out.format("You ordered %d" + " units of %s at $%.2f%n", unit, desc, price);
+				total += unit * price;
+			}
+		} catch (EOFException e) {}
+```
+**Output**
+```Bash
+You ordered 12 units of Java T-shirt at $19.99
+You ordered 8 units of Java Mug at $9.99
+You ordered 13 units of Duke Juggling Dolls at $15.99
+You ordered 29 units of Java Pin at $3.99
+You ordered 50 units of Java Key Chain at $4.99
+```
